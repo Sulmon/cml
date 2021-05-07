@@ -1,0 +1,32 @@
+name: model-wine-quality
+on: [push] # specifying a trigger so that when our repository receives a push that woul set into actiont he workflow that we are going to specify
+jobs:
+  run:
+    runs-on: [ubuntu-latest] # specify the machine the workflow will work oin (could specify a docker container)
+    # optionally use a convenient Ubuntu LTS + CUDA + DVC + CML image
+    # container: docker://dvcorg/cml-py3:latest
+    steps:
+      - uses: actions/checkout@v2
+      # may need to setup NodeJS & Python3 on e.g. self-hosted
+      # - uses: actions/setup-node@v2
+      #   with:
+      #     node-version: '12'
+      # - uses: actions/setup-python@v2
+      #   with:
+      #     python-version: '3.x'
+      - uses: iterative/setup-cml@v1
+      - name: Train model
+        run: |
+          # Your ML workflow goes here, when we percieve the push what are we going to do?
+          pip install -r requirements.txt #pip install our requirements
+          #run the test.py
+          python train.py
+          #eho "model metrics"
+          #cat metrics.txt
+      - name: Write CML report
+        env:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Post reports as comments in GitHub PRs
+          cat results.txt >> report.md
+          cml-send-comment report.md
